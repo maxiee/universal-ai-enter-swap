@@ -66,7 +66,6 @@
    ```
    https://raw.githubusercontent.com/maxiee/universal-ai-enter-swap/main/universal-ai-enter-swap.user.js
    ```
-   > 注意：请将 `[YOUR_USERNAME]` 替换为你的 GitHub 用户名
 2. 油猴脚本管理器会自动识别并询问是否安装
 
 ## 使用说明
