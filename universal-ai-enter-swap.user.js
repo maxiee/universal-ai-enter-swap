@@ -40,6 +40,41 @@
     debugLog('当前页面URL:', window.location.href);
     debugLog('调试模式已开启');
 
+    function simulateTextInput(element, text) {
+        // 先触发 compositionstart
+        const compositionStart = new CompositionEvent('compositionstart', {
+            bubbles: true,
+            cancelable: true,
+            data: ''
+        });
+        element.dispatchEvent(compositionStart);
+
+        // 然后触发 compositionupdate
+        const compositionUpdate = new CompositionEvent('compositionupdate', {
+            bubbles: true,
+            cancelable: true,
+            data: text
+        });
+        element.dispatchEvent(compositionUpdate);
+
+        // 最后触发 compositionend
+        const compositionEnd = new CompositionEvent('compositionend', {
+            bubbles: true,
+            cancelable: true,
+            data: text
+        });
+        element.dispatchEvent(compositionEnd);
+
+        // 触发 input 事件
+        const inputEvent = new InputEvent('input', {
+            bubbles: true,
+            cancelable: true,
+            data: text,
+            inputType: 'insertText'
+        });
+        element.dispatchEvent(inputEvent);
+    }
+
     // 处理textarea类型的输入框
     function handleTextareaEnter(element) {
         debugLog('处理textarea类型的回车事件');
@@ -99,48 +134,8 @@
     // 处理contenteditable div类型的输入框
     function handleContentEditableEnter(element) {
         debugLog('处理contenteditable类型的回车事件');
-
-        // 确保元素获得焦点
-        element.focus();
-
-        try {
-            // 使用 execCommand 插入换行符
-            if (document.execCommand) {
-                debugLog('尝试使用 execCommand 插入换行符');
-                const success = document.execCommand('insertLineBreak', false, null) ||
-                    document.execCommand('insertHTML', false, '<br>');
-
-                if (success) {
-                    debugLog('execCommand 成功插入换行符');
-                    setTimeout(() => {
-                        element.dispatchEvent(new InputEvent('input', { bubbles: true, inputType: 'insertLineBreak' }));
-                    }, 0);
-                    return;
-                }
-            }
-
-            // 手动操作 DOM
-            debugLog('execCommand 失败，尝试手动操作DOM');
-            const selection = window.getSelection();
-            if (selection.rangeCount > 0) {
-                const range = selection.getRangeAt(0);
-                range.deleteContents();
-
-                const br = document.createElement('br');
-                range.insertNode(br);
-                range.setStartAfter(br);
-                range.collapse(true);
-
-                selection.removeAllRanges();
-                selection.addRange(range);
-
-                setTimeout(() => {
-                    element.dispatchEvent(new InputEvent('input', { bubbles: true, inputType: 'insertLineBreak' }));
-                }, 0);
-            }
-        } catch (error) {
-            debugLog('处理contenteditable换行时出错:', error);
-        }
+        simulateTextInput(element, '\n');
+        return false;
     }
 
     // 全局键盘事件处理函数
